@@ -1,0 +1,23 @@
+body { font-family: 'Inter', system-ui, sans-serif; background: #f5f6f7; color: #0f172a; -webkit-font-smoothing: antialiased; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.hairline { box-shadow: inset 0 -1px 0 #e2e8f0; }
+.hairline-t { box-shadow: inset 0 1px 0 #e2e8f0; }
+.tabular { font-variant-numeric: tabular-nums; }
+.hero-gradient { background: linear-gradient(135deg, #0d1b2e 0%, #162236 100%); }
+
+/* Recharts tooltip */
+.recharts-default-tooltip { background: #0d1b2e !important; border: 0 !important; border-radius: 8px !important; color: white !important; padding: 8px 12px !important; font-size: 12px !important; }
+.recharts-tooltip-label { color: #cbd5e1 !important; margin-bottom: 2px !important; }
+
+/* tiny utility for subtle pulse on critical alerts */
+@keyframes sq-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.sq-pulse { animation: sq-pulse 1.8s ease-in-out infinite; }
+
+/* focused row highlight */
+.row-hover:hover { background: #f8fafc; cursor: pointer; }
+.row-active { background: #eff6ff !important; }
