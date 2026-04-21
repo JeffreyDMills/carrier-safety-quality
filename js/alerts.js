@@ -2,12 +2,15 @@
    Alerts
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
+window.SQ_REGISTER('Alerts', function () {
   const { useState } = React;
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
-  const { Card, SectionHeader, SeverityPill, StatusPill, Confidence, Icon, Th, Td } = window.SQ_UI;
+  const {
+    Card, SectionHeader, SeverityPill, StatusPill, Confidence,
+    KeyValue, ClickableRow,
+    Icon, Th, Td,
+  } = window.SQ_UI;
 
   function Alerts({ onNav }) {
     const [selectedId, setSelectedId] = useState('AL-801');
@@ -59,7 +62,12 @@
                   {D.alerts.map((a, i) => {
                     const active = a.id === selectedId;
                     return (
-                      <tr key={a.id} className={`${active ? 'row-active' : 'row-hover'} ${i < D.alerts.length - 1 ? 'border-b border-slate-100' : ''}`} onClick={() => setSelectedId(a.id)}>
+                      <ClickableRow
+                        key={a.id}
+                        onActivate={() => setSelectedId(a.id)}
+                        className={`${active ? 'row-active' : 'row-hover'} ${i < D.alerts.length - 1 ? 'border-b border-slate-100' : ''}`}
+                        aria-label={`Select alert ${a.id} · ${a.type}`}
+                      >
                         <Td><SeverityPill severity={a.severity} /></Td>
                         <Td>
                           <div className="text-[12px] font-medium text-slate-900 leading-snug">{a.type}</div>
@@ -69,7 +77,7 @@
                         <Td align="right"><Confidence value={a.confidence} /></Td>
                         <Td className="text-slate-500 text-[11px]">{a.owner}</Td>
                         <Td className="text-slate-700 text-[11px]">{a.nextAction}</Td>
-                      </tr>
+                      </ClickableRow>
                     );
                   })}
                 </tbody>
@@ -94,12 +102,12 @@
               </div>
 
               <div className="mt-4 space-y-2.5">
-                <Dkv label="Confidence"    value={`${(selected.confidence * 100).toFixed(0)}%`} strong />
-                <Dkv label="Owner"         value={selected.owner} />
-                <Dkv label="Status"        value={selected.status} />
-                <Dkv label="Created"       value={selected.created} />
-                <Dkv label="Next action"   value={selected.nextAction} strong />
-                {selected.linkedRCA && <Dkv label="Linked RCA"   value={selected.linkedRCA} />}
+                <KeyValue label="Confidence"    value={`${(selected.confidence * 100).toFixed(0)}%`} strong />
+                <KeyValue label="Owner"         value={selected.owner} />
+                <KeyValue label="Status"        value={selected.status} />
+                <KeyValue label="Created"       value={selected.created} />
+                <KeyValue label="Next action"   value={selected.nextAction} strong />
+                {selected.linkedRCA && <KeyValue label="Linked RCA"   value={selected.linkedRCA} />}
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100">
@@ -137,15 +145,6 @@
     );
   }
 
-  function Dkv({ label, value, strong }) {
-    return (
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] text-slate-500">{label}</span>
-        <span className={`text-[12px] tabular ${strong ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>{value}</span>
-      </div>
-    );
-  }
-
   function Route({ step, label, detail, tone = 'slate' }) {
     const tones = {
       blue:  'bg-carrier-blue text-white',
@@ -162,5 +161,5 @@
     );
   }
 
-  window.SQ_SCREENS.Alerts = Alerts;
-})();
+  return Alerts;
+});

@@ -15,6 +15,7 @@ window.SQ_DATA = {
     recallLiabilityShield:      16_312_500,   // $16.3125M
     qualityLaborReclaim:         3_500_000,   // $3.5M
     totalValueProtected:        63_312_500,   // $63.3125M
+    fieldFailuresAvoided30d:          4_820,   // 30-day projection (Field Exposure summary)
   },
 
   assumptions: {

@@ -5,6 +5,7 @@
 (function () {
   const { useState } = React;
   const { SideNav, TopHeader, KPIStrip } = window.SQ_UI;
+  const BUILD_DATE = new Date().toISOString().slice(0, 10);
 
   function App() {
     const [route, setRoute] = useState('exec');
@@ -32,7 +33,7 @@
           </main>
           <footer className="px-7 py-3 hairline-t bg-white text-[11px] text-slate-400 flex items-center justify-between">
             <div>Carrier · Product Safety & Quality Intelligence — art-of-the-possible prototype</div>
-            <div>Build {new Date().toISOString().slice(0,10)} · Demo data only</div>
+            <div>Build {BUILD_DATE} · Demo data only</div>
           </footer>
         </div>
       </div>

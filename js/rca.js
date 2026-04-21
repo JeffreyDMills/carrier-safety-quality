@@ -3,12 +3,11 @@
    Hero case: RCA-501 (VRF Control Board Reset Escalation)
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
+window.SQ_REGISTER('RootCause', function () {
   const { useState } = React;
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
-  const { Card, SectionHeader, SeverityPill, StatusPill, Confidence, Icon, Th, Td } = window.SQ_UI;
+  const { Card, SectionHeader, SeverityPill, StatusPill, Confidence, ProgressBar, Icon, Th, Td } = window.SQ_UI;
 
   function RootCause({ onNav }) {
     const [selectedId, setSelectedId] = useState('RCA-501');
@@ -206,11 +205,11 @@
 
   function CorrelationBar({ value }) {
     const pct = Math.round(value * 100);
-    const tone = value >= 0.75 ? 'bg-red-500' : value >= 0.6 ? 'bg-amber-500' : 'bg-slate-400';
+    const color = value >= 0.75 ? 'bg-red-500' : value >= 0.6 ? 'bg-amber-500' : 'bg-slate-400';
     return (
       <div className="flex items-center gap-2 min-w-[120px]">
-        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
+        <div className="flex-1">
+          <ProgressBar value={pct} color={color} height="h-1.5" />
         </div>
         <span className="text-[11px] tabular text-slate-700 font-medium w-10 text-right">{value.toFixed(2)}</span>
       </div>
@@ -254,5 +253,5 @@
     );
   }
 
-  window.SQ_SCREENS.RootCause = RootCause;
-})();
+  return RootCause;
+});

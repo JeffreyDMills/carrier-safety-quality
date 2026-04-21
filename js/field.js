@@ -2,11 +2,12 @@
    Field Exposure & Action Center
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
+window.SQ_REGISTER('FieldExposure', function () {
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
   const { Card, SectionHeader, SeverityPill, StatusPill, Icon, Th, Td, TrendChip } = window.SQ_UI;
+
+  const DEALERS_VISIBLE = 6;
 
   function FieldExposure({ onNav }) {
     const monitored = D.populations.reduce((s, p) => s + p.unitsInMarket, 0);
@@ -26,7 +27,7 @@
           <Chip label="Units monitored"        value={H.fmtNum(monitored)}                  sub="across 6 families"   tone="blue"  />
           <Chip label="High-risk units"        value={H.fmtNum(highRisk)}                   sub="rolled up"           tone="amber" />
           <Chip label="Populations escalated"  value={escalated}                            sub={`of ${D.populations.length}`} tone="red"   />
-          <Chip label="Field failures avoided" value="4,820"                                sub="30-day projection"   tone="green" />
+          <Chip label="Field failures avoided" value={H.fmtNum(D.kpi.fieldFailuresAvoided30d)} sub="30-day projection"   tone="green" />
           <Chip label="Campaign prevention opp" value={H.fmtUSD(D.kpi.recallLiabilityShield)} sub={`${D.campaignPreventionCandidates.length} candidates`} tone="gold" />
         </div>
 
@@ -95,7 +96,7 @@
 
           <Card className="col-span-5" title="Dealer / field prioritization" subtitle="Where to push field response first">
             <div className="space-y-2">
-              {D.dealers.slice(0, 6).map(d => (
+              {D.dealers.slice(0, DEALERS_VISIBLE).map(d => (
                 <div key={d.id} className="flex items-center justify-between p-2.5 rounded-lg ring-1 ring-slate-200">
                   <div className="min-w-0">
                     <div className="text-[12px] font-medium text-slate-900 truncate">{d.name}</div>
@@ -110,6 +111,11 @@
                   </div>
                 </div>
               ))}
+              {D.dealers.length > DEALERS_VISIBLE && (
+                <div className="text-[11px] text-slate-500 pt-1">
+                  +{D.dealers.length - DEALERS_VISIBLE} more dealers not shown
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -156,5 +162,5 @@
     );
   }
 
-  window.SQ_SCREENS.FieldExposure = FieldExposure;
-})();
+  return FieldExposure;
+});

@@ -198,6 +198,73 @@
     );
   };
 
+  /* ---------- PROGRESS BAR (generic, color/height pickable) ----------
+     One canonical bar so populations / patterns / rca don't each redo width math. */
+  const ProgressBar = ({
+    value,
+    max = 100,
+    color = 'bg-carrier-blue',
+    height = 'h-2',
+    className = '',
+  }) => {
+    const pct = Math.max(0, Math.min(100, (Number(value) / Number(max)) * 100));
+    return (
+      <div className={`${height} bg-slate-100 rounded-full overflow-hidden ${className}`}>
+        <div className={`h-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+    );
+  };
+
+  /* ---------- KEY/VALUE ROW ----------
+     Replaces the four near-identical Dkv components that lived inside
+     populations / patterns / alerts. Auto-detects React-node values so callers
+     don't need an isNode flag. */
+  const KeyValue = ({ label, value, strong = false, tone = 'default' }) => {
+    const toneCls = {
+      default: 'text-slate-800',
+      strong:  'text-slate-900',
+      red:     'text-red-700',
+      amber:   'text-amber-700',
+      navy:    'text-carrier-blue',
+    }[tone] || 'text-slate-800';
+    const isNode = React.isValidElement(value);
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-slate-500">{label}</span>
+        {isNode
+          ? value
+          : (
+            <span className={`text-[12px] tabular ${strong ? 'font-semibold text-slate-900' : `font-medium ${toneCls}`}`}>
+              {value}
+            </span>
+          )}
+      </div>
+    );
+  };
+
+  /* ---------- CLICKABLE TABLE ROW ----------
+     Adds keyboard activation + visible focus ring to onClick rows, so the
+     drill-in interaction isn't mouse-only. */
+  const ClickableRow = ({ onActivate, className = '', children, ...rest }) => {
+    const handleKey = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onActivate && onActivate(e);
+      }
+    };
+    return (
+      <tr
+        tabIndex={0}
+        onClick={onActivate}
+        onKeyDown={handleKey}
+        className={`cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-carrier-blue ${className}`}
+        {...rest}
+      >
+        {children}
+      </tr>
+    );
+  };
+
   /* ---------- LEFT NAV ---------- */
   const NAV = [
     { id: 'exec',        label: 'Risk Command',         icon: Icon.dashboard, group: 1 },
@@ -327,8 +394,51 @@
   /* ---------- export ---------- */
   window.SQ_UI = {
     Icon, SeverityPill, StatusPill, TrendChip, Confidence,
-    Card, SectionHeader, KPICard, Sparkline, HeatBar,
+    Card, SectionHeader, KPICard, Sparkline, HeatBar, ProgressBar,
+    KeyValue, ClickableRow,
     SideNav, TopHeader, KPIStrip,
     Th, Td, NAV,
+  };
+})();
+
+/* =========================================================================
+   SQ_REGISTER — screen-loading safety net
+   Wraps each screen factory in try/catch so a broken dependency (the way
+   Recharts silently failed without prop-types) renders a visible error card
+   instead of taking the whole app down with React error #130.
+   ========================================================================= */
+(function () {
+  function ErrorScreen(name, err) {
+    return function ScreenLoadError() {
+      return (
+        <div className="p-6 rounded-xl bg-red-50 ring-1 ring-red-200">
+          <div className="text-[12px] font-semibold tracking-[0.18em] uppercase text-red-700">
+            Screen failed to load
+          </div>
+          <div className="text-[16px] font-semibold text-slate-900 mt-1">{name}</div>
+          <pre className="mt-3 text-[11px] text-red-700 font-mono whitespace-pre-wrap leading-relaxed">
+            {String((err && err.stack) || (err && err.message) || err)}
+          </pre>
+          <div className="text-[11px] text-slate-600 mt-3">
+            Check the browser console for the full stack. Most common cause: a CDN dependency
+            (Recharts, prop-types, React) didn't load before this screen's IIFE ran.
+          </div>
+        </div>
+      );
+    };
+  }
+
+  window.SQ_REGISTER = function (name, factory) {
+    window.SQ_SCREENS = window.SQ_SCREENS || {};
+    try {
+      const Screen = factory();
+      if (typeof Screen !== 'function') {
+        throw new Error(`Factory for "${name}" did not return a component function.`);
+      }
+      window.SQ_SCREENS[name] = Screen;
+    } catch (e) {
+      console.error(`[SQ_SCREENS.${name}] failed to load:`, e);
+      window.SQ_SCREENS[name] = ErrorScreen(name, e);
+    }
   };
 })();

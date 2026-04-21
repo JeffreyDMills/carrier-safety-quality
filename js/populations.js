@@ -2,13 +2,17 @@
    Product Population Risk
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
-  const { useState, useMemo } = React;
+window.SQ_REGISTER('Populations', function () {
+  const { useState } = React;
   const R = Recharts;
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
-  const { Card, SectionHeader, SeverityPill, StatusPill, HeatBar, Confidence, Sparkline, Icon, Th, Td, TrendChip } = window.SQ_UI;
+  const {
+    Card, SectionHeader, SeverityPill, StatusPill,
+    HeatBar, ProgressBar, Confidence, Sparkline,
+    KeyValue, ClickableRow,
+    Icon, Th, Td, TrendChip,
+  } = window.SQ_UI;
 
   function Populations({ onNav }) {
     const [selectedId, setSelectedId] = useState('PP-102');
@@ -41,6 +45,7 @@
                       <Th align="right">Anomaly</Th>
                       <Th align="right">Safety</Th>
                       <Th align="right">Escalation</Th>
+                      <Th>9-period trend</Th>
                       <Th></Th>
                     </tr>
                   </thead>
@@ -48,10 +53,11 @@
                     {D.populations.map((p, i) => {
                       const active = p.id === selectedId;
                       return (
-                        <tr
+                        <ClickableRow
                           key={p.id}
+                          onActivate={() => setSelectedId(p.id)}
                           className={`${active ? 'row-active' : 'row-hover'} ${i < D.populations.length - 1 ? 'border-b border-slate-100' : ''}`}
-                          onClick={() => setSelectedId(p.id)}
+                          aria-label={`Select population ${p.id} · ${p.family}`}
                         >
                           <Td className="font-mono !text-slate-500 text-[11px]">{p.id}</Td>
                           <Td>
@@ -64,8 +70,9 @@
                           <Td align="right"><HeatBar value={p.alarmAnomalyScore} /></Td>
                           <Td align="right"><HeatBar value={p.safetyRiskScore} /></Td>
                           <Td align="right" className="tabular font-medium">{(p.escalationProbability * 100).toFixed(0)}%</Td>
+                          <Td><Sparkline data={p.trend} width={72} height={22} /></Td>
                           <Td><StatusPill status={p.escalationStatus} /></Td>
-                        </tr>
+                        </ClickableRow>
                       );
                     })}
                   </tbody>
@@ -83,16 +90,16 @@
           <div className="col-span-5 space-y-6">
             <Card title="Population detail" subtitle={`${selected.id} · ${selected.models}`}>
               <div className="space-y-3">
-                <Dkv label="Product family"       value={selected.family} />
-                <Dkv label="Production period"    value={selected.productionPeriod} />
-                <Dkv label="Units in market"      value={H.fmtNum(selected.unitsInMarket)} />
-                <Dkv label="Telemetry coverage"   value={H.fmtPct(selected.telemetryCoverage)} />
-                <Dkv label="High-risk units"      value={H.fmtNum(selected.highRiskUnits)} tone="red" />
-                <Dkv label="Claim rate"           value={`${(selected.warrantyClaimRate * 100).toFixed(1)}%`} />
-                <Dkv label="Alarm anomaly score"  value={selected.alarmAnomalyScore} />
-                <Dkv label="Safety risk score"    value={selected.safetyRiskScore} />
-                <Dkv label="Likely failure category" value={selected.likelyFailureCategory} strong />
-                <Dkv label="Escalation probability"  value={H.fmtPct(selected.escalationProbability)} tone="red" strong />
+                <KeyValue label="Product family"           value={selected.family} />
+                <KeyValue label="Production period"        value={selected.productionPeriod} />
+                <KeyValue label="Units in market"          value={H.fmtNum(selected.unitsInMarket)} />
+                <KeyValue label="Telemetry coverage"       value={H.fmtPct(selected.telemetryCoverage)} />
+                <KeyValue label="High-risk units"          value={H.fmtNum(selected.highRiskUnits)} tone="red" />
+                <KeyValue label="Claim rate"               value={`${(selected.warrantyClaimRate * 100).toFixed(1)}%`} />
+                <KeyValue label="Alarm anomaly score"      value={selected.alarmAnomalyScore} />
+                <KeyValue label="Safety risk score"        value={selected.safetyRiskScore} />
+                <KeyValue label="Likely failure category"  value={selected.likelyFailureCategory} strong />
+                <KeyValue label="Escalation probability"   value={H.fmtPct(selected.escalationProbability)} tone="red" strong />
                 <div className="pt-3 mt-1 border-t border-slate-100">
                   <div className="text-[11px] uppercase tracking-wider text-slate-500">Recommended action</div>
                   <div className="text-[13px] font-semibold text-slate-900 mt-1">{selected.recommendedAction}</div>
@@ -157,25 +164,15 @@
         {ranked.map((r, i) => (
           <div key={r.cat} className="flex items-center gap-3">
             <div className="w-48 text-[12px] text-slate-700">{r.cat}</div>
-            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className={i === 0 ? 'h-full bg-carrier-blue' : 'h-full bg-slate-300'}
-                style={{ width: `${Math.round(r.p * 100)}%` }}
+            <div className="flex-1">
+              <ProgressBar
+                value={Math.round(r.p * 100)}
+                color={i === 0 ? 'bg-carrier-blue' : 'bg-slate-300'}
               />
             </div>
             <div className="w-10 text-right tabular text-[12px] font-medium text-slate-800">{Math.round(r.p * 100)}%</div>
           </div>
         ))}
-      </div>
-    );
-  }
-
-  function Dkv({ label, value, strong, tone }) {
-    const toneCls = tone === 'red' ? 'text-red-700' : tone === 'amber' ? 'text-amber-700' : 'text-slate-900';
-    return (
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] text-slate-500">{label}</span>
-        <span className={`text-[12px] tabular ${strong ? 'font-semibold' : 'font-medium'} ${toneCls}`}>{value}</span>
       </div>
     );
   }
@@ -203,5 +200,5 @@
     ];
   }
 
-  window.SQ_SCREENS.Populations = Populations;
-})();
+  return Populations;
+});

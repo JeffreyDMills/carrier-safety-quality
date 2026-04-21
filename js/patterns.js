@@ -2,13 +2,18 @@
    Failure Pattern & Correlation
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
+window.SQ_REGISTER('Patterns', function () {
   const { useState } = React;
   const R = Recharts;
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
-  const { Card, SectionHeader, SeverityPill, TrendChip, Confidence, Icon, Th, Td } = window.SQ_UI;
+  const {
+    Card, SectionHeader, SeverityPill, TrendChip, Confidence,
+    KeyValue, ClickableRow, ProgressBar,
+    Icon, Th, Td,
+  } = window.SQ_UI;
+
+  const REGION_CLUSTERS_VISIBLE = 5;
 
   function Patterns({ onNav }) {
     const [selectedId, setSelectedId] = useState('AP-402');
@@ -42,10 +47,11 @@
                     {D.alarmPatterns.map((p, i) => {
                       const active = p.id === selectedId;
                       return (
-                        <tr
+                        <ClickableRow
                           key={p.id}
+                          onActivate={() => setSelectedId(p.id)}
                           className={`${active ? 'row-active' : 'row-hover'} ${i < D.alarmPatterns.length - 1 ? 'border-b border-slate-100' : ''}`}
-                          onClick={() => setSelectedId(p.id)}
+                          aria-label={`Select alarm pattern ${p.id}`}
                         >
                           <Td className="font-mono !text-slate-500 text-[11px]">{p.id}</Td>
                           <Td>
@@ -56,7 +62,7 @@
                           <Td align="right" className="tabular">{p.avgTimeToFailureDays}d</Td>
                           <Td align="right"><Confidence value={p.confidence} /></Td>
                           <Td><TrendChip trend={p.trend} /></Td>
-                        </tr>
+                        </ClickableRow>
                       );
                     })}
                   </tbody>
@@ -132,14 +138,14 @@
               </div>
 
               <div className="mt-4 space-y-2.5">
-                <Dkv label="Product family"          value={selected.productFamily} />
-                <Dkv label="Model group"             value={selected.modelGroup} />
-                <Dkv label="Frequency"               value={`${selected.frequency} occurrences`} />
-                <Dkv label="Avg time to failure"     value={`${selected.avgTimeToFailureDays} days`} />
-                <Dkv label="Linked failure category" value={selected.linkedFailureCategory} strong />
-                <Dkv label="Severity"                value={<SeverityPill severity={selected.severity} />} isNode />
-                <Dkv label="Trend"                   value={<TrendChip trend={selected.trend} />} isNode />
-                <Dkv label="Regions"                 value={selected.regions.join(', ')} />
+                <KeyValue label="Product family"          value={selected.productFamily} />
+                <KeyValue label="Model group"             value={selected.modelGroup} />
+                <KeyValue label="Frequency"               value={`${selected.frequency} occurrences`} />
+                <KeyValue label="Avg time to failure"     value={`${selected.avgTimeToFailureDays} days`} />
+                <KeyValue label="Linked failure category" value={selected.linkedFailureCategory} strong />
+                <KeyValue label="Severity"                value={<SeverityPill severity={selected.severity} />} />
+                <KeyValue label="Trend"                   value={<TrendChip trend={selected.trend} />} />
+                <KeyValue label="Regions"                 value={selected.regions.join(', ')} />
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100">
@@ -147,26 +153,29 @@
                   <span className="text-[11px] uppercase tracking-wider text-slate-500">Confidence</span>
                   <span className="text-[14px] font-semibold tabular text-slate-900">{(selected.confidence * 100).toFixed(0)}%</span>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-carrier-blue" style={{ width: `${selected.confidence * 100}%` }}></div>
-                </div>
+                <ProgressBar value={selected.confidence * 100} />
               </div>
             </Card>
 
             <Card title="Geographic / dealer clustering" subtitle="Where this pattern is most concentrated">
               <div className="space-y-2">
-                {D.regionClusters.slice(0, 5).map((c, i) => (
+                {D.regionClusters.slice(0, REGION_CLUSTERS_VISIBLE).map(c => (
                   <div key={c.region} className="p-2.5 rounded-lg ring-1 ring-slate-200">
                     <div className="flex items-center justify-between">
                       <div className="text-[12px] font-medium text-slate-900">{c.region}</div>
                       <div className="text-[11px] text-slate-500 tabular">density {c.issueDensity}</div>
                     </div>
                     <div className="text-[11px] text-slate-500 mt-0.5">{c.dealer} · {c.family}</div>
-                    <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-carrier-gold" style={{ width: `${c.patternConcentration}%` }}></div>
+                    <div className="mt-1.5">
+                      <ProgressBar value={c.patternConcentration} color="bg-carrier-gold" height="h-1.5" />
                     </div>
                   </div>
                 ))}
+                {D.regionClusters.length > REGION_CLUSTERS_VISIBLE && (
+                  <div className="text-[11px] text-slate-500 pt-1">
+                    +{D.regionClusters.length - REGION_CLUSTERS_VISIBLE} more clusters not shown
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -193,17 +202,6 @@
     );
   }
 
-  function Dkv({ label, value, strong, isNode }) {
-    return (
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] text-slate-500">{label}</span>
-        {isNode
-          ? value
-          : <span className={`text-[12px] tabular ${strong ? 'font-semibold text-slate-900' : 'text-slate-800'}`}>{value}</span>}
-      </div>
-    );
-  }
-
   function Evidence({ label, value }) {
     return (
       <li className="flex items-start gap-2">
@@ -213,5 +211,5 @@
     );
   }
 
-  window.SQ_SCREENS.Patterns = Patterns;
-})();
+  return Patterns;
+});

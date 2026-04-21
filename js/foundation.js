@@ -2,12 +2,11 @@
    Data Foundation / Signal Recovery
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
+window.SQ_REGISTER('DataFoundation', function () {
   const R = Recharts;
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
-  const { Card, SectionHeader, Icon, Th, Td } = window.SQ_UI;
+  const { Card, SectionHeader, KeyValue, Icon, Th, Td } = window.SQ_UI;
 
   function DataFoundation() {
     const tele = D.telemetryCoverage;
@@ -120,13 +119,13 @@
             </div>
             <div className="col-span-5">
               <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Normalized intelligence</div>
-              <div className="p-4 rounded-lg ring-1 ring-carrier-blue/30 bg-gradient-to-br from-carrier-blue/5 to-transparent">
-                <Kv label="Product family"           value={D.signalExample.normalized.productFamily} />
-                <Kv label="Model group"              value={D.signalExample.normalized.modelGroup} />
-                <Kv label="Cohort"                   value={D.signalExample.normalized.cohort} />
-                <Kv label="Likely failure category"  value={D.signalExample.normalized.likelyFailureCategory} strong />
-                <Kv label="Safety risk score"        value={D.signalExample.normalized.safetyRiskScore} />
-                <Kv label="Escalation probability"   value={H.fmtPct(D.signalExample.normalized.escalationProbability)} />
+              <div className="p-4 rounded-lg ring-1 ring-carrier-blue/30 bg-gradient-to-br from-carrier-blue/5 to-transparent space-y-1">
+                <KeyValue label="Product family"           value={D.signalExample.normalized.productFamily} />
+                <KeyValue label="Model group"              value={D.signalExample.normalized.modelGroup} />
+                <KeyValue label="Cohort"                   value={D.signalExample.normalized.cohort} />
+                <KeyValue label="Likely failure category"  value={D.signalExample.normalized.likelyFailureCategory} strong />
+                <KeyValue label="Safety risk score"        value={D.signalExample.normalized.safetyRiskScore} />
+                <KeyValue label="Escalation probability"   value={H.fmtPct(D.signalExample.normalized.escalationProbability)} />
                 <div className="mt-3 pt-3 border-t border-slate-200">
                   <div className="text-[10px] uppercase tracking-wider text-slate-500">Recommended action</div>
                   <div className="text-[13px] font-semibold text-slate-900 mt-1">{D.signalExample.normalized.recommendedAction}</div>
@@ -190,10 +189,10 @@
     return (
       <div className="overflow-x-auto">
         <svg width="700" height="320" className="mx-auto">
-          {edges.map(([from, to], i) => {
+          {edges.map(([from, to]) => {
             const a = byId[from]; const b = byId[to];
             return (
-              <line key={i}
+              <line key={`${from}-${to}`}
                 x1={a.x + nw} y1={a.y + nh/2}
                 x2={b.x} y2={b.y + nh/2}
                 stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="0"
@@ -236,14 +235,5 @@
     );
   }
 
-  function Kv({ label, value, strong }) {
-    return (
-      <div className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-        <span className="text-[11px] text-slate-500">{label}</span>
-        <span className={`text-[12px] tabular ${strong ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>{value}</span>
-      </div>
-    );
-  }
-
-  window.SQ_SCREENS.DataFoundation = DataFoundation;
-})();
+  return DataFoundation;
+});

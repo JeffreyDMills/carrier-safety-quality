@@ -2,13 +2,12 @@
    Executive Risk Command Center (HERO)
    ========================================================================= */
 
-(function () {
-  window.SQ_SCREENS = window.SQ_SCREENS || {};
+window.SQ_REGISTER('Executive', function () {
   const { useState } = React;
   const R = Recharts;
   const D = window.SQ_DATA;
   const H = window.SQ_HELPERS;
-  const { Card, SectionHeader, SeverityPill, TrendChip, StatusPill, HeatBar, Icon, Th, Td } = window.SQ_UI;
+  const { Card, SectionHeader, SeverityPill, TrendChip, StatusPill, HeatBar, ClickableRow, Icon, Th, Td } = window.SQ_UI;
 
   function Executive({ onNav }) {
     const k = D.kpi;
@@ -124,7 +123,12 @@
               </thead>
               <tbody>
                 {D.populations.map((p, i) => (
-                  <tr key={p.id} className={`row-hover ${i < D.populations.length - 1 ? 'border-b border-slate-100' : ''}`} onClick={() => onNav('populations')}>
+                  <ClickableRow
+                    key={p.id}
+                    onActivate={() => onNav('populations')}
+                    className={`row-hover ${i < D.populations.length - 1 ? 'border-b border-slate-100' : ''}`}
+                    aria-label={`Open populations view · ${p.family} · ${p.models}`}
+                  >
                     <Td className="font-medium !text-slate-900">{p.family}</Td>
                     <Td className="text-slate-500">{p.models}</Td>
                     <Td align="right" className="tabular">{H.fmtNum(p.unitsInMarket)}</Td>
@@ -134,7 +138,7 @@
                     <Td align="right"><HeatBar value={p.safetyRiskScore} /></Td>
                     <Td>{p.likelyFailureCategory}</Td>
                     <Td><StatusPill status={p.escalationStatus} /></Td>
-                  </tr>
+                  </ClickableRow>
                 ))}
               </tbody>
             </table>
@@ -364,5 +368,5 @@
     );
   }
 
-  window.SQ_SCREENS.Executive = Executive;
-})();
+  return Executive;
+});
